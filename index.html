@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en-GB"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>SortSmart: Postcode to Cage Finder and Dock Checklists</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#eef3f7;--card:#fff;--tx:#12263a;--mut:#5b6f82;--p:#0b5ed7;--p2:#0a3d91;--acc:#ff9f1c;--ok:#12a150;--bd:#d6e0ea;--hi:#ffe8b8;--cn:#c25e00;--bg2:#d9e8f6;--dia1:#e3f0ff;--dia2:#f6fbff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d1722;--card:#15263a;--tx:#e8f0f8;--mut:#9fb3c6;--p:#5aa2ff;--p2:#1c4f9c;--ok:#3ddc84;--bd:#26405b;--hi:#5a4311;--cn:#ffb347;--bg2:#0a121b;--dia1:#0f2a45;--dia2:#143455}}
+:root[data-theme="dark"]{--bg:#0d1722;--card:#15263a;--tx:#e8f0f8;--mut:#9fb3c6;--p:#5aa2ff;--p2:#1c4f9c;--ok:#3ddc84;--bd:#26405b;--hi:#5a4311;--cn:#ffb347;--bg2:#0a121b;--dia1:#0f2a45;--dia2:#143455}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Arial,Helvetica,sans-serif;line-height:1.4}
+header{background:linear-gradient(135deg,#0a3d91,#0b5ed7 60%,#14b8a6);color:#fff;padding:28px 0 26px}
+header h1{margin:0;font-size:26px}header p{margin:8px 0 0;opacity:.95;font-size:15px;line-height:1.55;max-width:720px}
+.w{max-width:960px;margin:0 auto;padding:0 16px 28px}
+nav{display:flex;gap:6px;overflow-x:auto;margin:14px 0}
+nav button{flex:0 0 auto;border:1px solid var(--bd);background:var(--card);color:var(--tx);padding:9px 14px;border-radius:20px;font-size:14px;cursor:pointer}
+nav button.on{background:var(--p);color:#fff;border-color:var(--p)}
+.pane{display:none}.pane.on{display:block}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:16px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+h2{margin:0 0 10px;font-size:17px;color:var(--p)}h3{margin:12px 0 6px;font-size:15px}
+input,select,textarea{font:inherit;padding:9px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);width:100%}
+#pc{font-size:26px;border:2px solid var(--p);text-transform:uppercase}
+.res{display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin-top:14px}
+.cage{font-size:64px;font-weight:700;color:var(--cn);line-height:1;min-width:140px}
+.meta div{margin:3px 0}.meta b{color:var(--mut);font-weight:400}.err{color:#d64545}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:6px}
+.cg{border:1px solid var(--bd);border-radius:8px;padding:6px 2px;text-align:center;font-size:13px}
+.cg small{display:block;color:var(--mut);font-size:10px}.cg.on{background:var(--hi);border-color:var(--acc);font-weight:700}
+.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-bottom:8px}
+button.b{background:var(--p);color:#fff;border:0;border-radius:8px;padding:9px 14px;cursor:pointer;font-size:14px}
+button.g{background:transparent;color:var(--p);border:1px solid var(--p)}
+.scroll{overflow-x:auto;max-height:340px}table{border-collapse:collapse;width:100%;font-size:13px}td,th{border:1px solid var(--bd);padding:4px 8px;text-align:left}th{background:var(--p2);color:#fff;position:sticky;top:0}
+.hist span{display:inline-block;background:var(--bg);border:1px solid var(--bd);border-radius:14px;padding:3px 10px;margin:3px;font-size:13px}
+.cmp{display:grid;grid-template-columns:1fr 1fr;gap:12px}.cmp>div{border:1px solid var(--bd);border-radius:8px;padding:10px;font-size:13px}.cmp ol{margin:0;padding-left:18px}
+.bar{height:8px;background:var(--bd);border-radius:4px;overflow:hidden;margin:4px 0 8px}.bar i{display:block;height:100%;background:var(--ok);width:0}
+label.ck{display:flex;gap:8px;align-items:flex-start;padding:6px 0;border-bottom:1px dashed var(--bd);font-size:14px;cursor:pointer}label.ck input{width:auto;margin-top:3px}
+.kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:10px}.kpi div{background:var(--bg);border-radius:8px;padding:10px;text-align:center}.kpi b{display:block;font-size:22px;color:var(--ok)}
+svg{max-width:100%;height:auto}svg text.bx{fill:#fff;font-weight:700;font-size:14px}svg text{fill:var(--tx);font-family:Arial,sans-serif}
+.me{background:linear-gradient(135deg,#0a3d91,#14b8a6);color:#fff;border:0}.me h2{color:#fff}.me a{color:#ffd37a}
+.me ul{padding-left:18px;margin:6px 0}.me .btn{display:inline-block;background:#fff;color:#0a3d91;padding:8px 12px;border-radius:8px;margin:4px 4px 4px 0;text-decoration:none;font-weight:700;font-size:13px}
+.sm{font-size:12px;color:var(--mut)}
+@media(max-width:600px){.cmp{grid-template-columns:1fr}.cage{font-size:52px}}
+@media print{header,nav,button,.sm{display:none}.pane{display:block!important}}
+body{background:linear-gradient(180deg,var(--bg) 0,var(--bg2) 100%) fixed}
+p{line-height:1.5}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.st{border-radius:12px;padding:14px;color:#fff;display:flex;flex-direction:column;gap:6px}
+.st i{font-style:normal;font-weight:700;font-size:22px;opacity:.9}.st b{font-size:16px}.st span{font-size:14px;line-height:1.4}
+.s1{background:#0b5ed7}.s2{background:#0a3d91}.s3{background:#0e8a7d}.s4{background:#b45309}.s5{background:#15803d}
+.dia{background:linear-gradient(135deg,var(--dia1),var(--dia2));border:1px solid var(--bd);border-radius:12px;padding:12px}
+.frm{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:12px}
+.frm label{font-size:13px;color:var(--mut);display:block}.frm input{margin-top:4px}
+.row label{font-size:13px;color:var(--mut);display:block}.row input{margin-top:4px}
+th{white-space:nowrap}
+</style></head><body>
+<header><div class="w"><h1>📦 SortSmart</h1><p>Type a postcode, get the cage. Plus dock, conveyor and warehouse checklists for parcel networks, FMCG, 3PL and retail distribution. Free, no sign-up, nothing leaves your browser.</p></div></header>
+<div class="w">
+<nav id="nav"><button data-t="find" class="on">🔎 Finder</button><button data-t="codes">🗂️ Manage codes</button><button data-t="flow">🔄 Process</button><button data-t="chk">✅ Checklists</button><button data-t="roi">📈 Savings</button><button data-t="me">👤 About</button></nav>
+
+<section class="pane on" id="find">
+<div class="c"><input id="pc" placeholder="Enter or scan postcode / ZIP…" autocomplete="off"><p class="sm">Press Enter to log the lookup. Works with full postcodes (E11 3AB) or the outward code (E11).</p>
+<div class="res"><div class="cage" id="cage">–</div><div class="meta" id="meta"><b>Waiting for a postcode</b></div></div></div>
+<div class="c"><h2>Cage board</h2><div class="grid" id="grid"></div></div>
+<div class="c"><h2>Recent lookups</h2><div class="hist" id="hist">None yet</div></div></section>
+
+<section class="pane" id="codes">
+<div class="c"><h2>Add or update a code</h2>
+<div class="frm"><label>Postcode / code<input id="f1" placeholder="E11"></label><label>Area<input id="f2" placeholder="Leytonstone"></label><label>Cage number<input id="f3" placeholder="C03"></label><label>Lane / chute<input id="f4" placeholder="Lane A"></label><label>Dock / door<input id="f5" placeholder="Door 1"></label><label>Service / product<input id="f6" placeholder="All"></label></div>
+<button class="b" id="add">Save code</button> <span class="sm" id="msg"></span></div>
+<div class="c"><h2>Your list (<span id="cnt"></span>)</h2><div class="scroll"><table id="tb"></table></div></div>
+<div class="c"><h2>Import / export CSV</h2><textarea id="csv" rows="5" placeholder="code,area,cage,lane,dock,service"></textarea><p><button class="b" id="exp">Export to box</button> <button class="b g" id="dl">Download CSV</button> <button class="b g" id="imp">Import from box</button> <button class="b g" id="clr">Clear all</button></p><p class="sm">Data lives only in this page. Export the CSV to keep your list. The sample 50 codes are illustrative only.</p></div></section>
+
+<section class="pane" id="flow">
+<div class="c"><h2>Proposed flow</h2>
+<div class="steps"><div class="st s1"><i>1</i><b>Pre-sort at origin</b><span>Bag by product or area where the item is booked</span></div><div class="st s2"><i>2</i><b>Ramp + conveyor</b><span>Unload from the vehicle without carrying</span></div><div class="st s3"><i>3</i><b>Scan once</b><span>Look up the cage number straight away</span></div><div class="st s4"><i>4</i><b>Lane by postcode</b><span>Conveyor lanes follow postcode order</span></div><div class="st s5"><i>5</i><b>Load and dispatch</b><span>Seal, check and send</span></div></div><p class="sm" style="margin-top:12px">Removes manual sorting, double scanning, repeated cage moves and searching for the right cage.</p></div>
+<div class="c"><h2>Dock and conveyor set-up</h2>
+<div class="dia"><svg viewBox="0 0 740 210" role="img" aria-label="Dock, ramp and telescopic conveyor inside vehicle"><defs><marker id="a" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#ff9f1c"/></marker></defs><rect x="0" y="120" width="170" height="70" fill="#5b6f82"/><text x="85" y="160" text-anchor="middle" style="fill:#fff" font-size="13">Dock / warehouse</text>
+<polygon points="170,120 215,120 215,126 170,126" fill="#ff9f1c"/><text x="192" y="112" text-anchor="middle" font-size="11">Ramp</text>
+<rect x="215" y="60" width="500" height="66" fill="none" stroke="#0b5ed7" stroke-width="3"/><text x="465" y="50" text-anchor="middle" font-size="12">Vehicle / trailer (floor level with the ramp)</text>
+<circle cx="290" cy="150" r="18" fill="#12263a" stroke="#9fb3c6" stroke-width="2"/><circle cx="640" cy="150" r="18" fill="#12263a" stroke="#9fb3c6" stroke-width="2"/>
+<line x1="170" y1="120" x2="700" y2="120" stroke="#14b8a6" stroke-width="8"/><text x="440" y="108" text-anchor="middle" font-size="12" style="fill:#14b8a6">Conveyor runs from dock to the far end of the vehicle</text>
+<g fill="none" stroke="#ff9f1c" stroke-width="2" marker-end="url(#a)"><line x1="700" y1="150" x2="700" y2="132"/><line x1="700" y1="150" x2="700" y2="190"/></g><text x="700" y="205" text-anchor="middle" font-size="11">Up / down</text></svg></div>
+<p class="sm">Check the ramp meets the vehicle bed with no step or gap, the conveyor reaches the end of the load, and the height adjusts both ways to suit each stack level.</p></div>
+<div class="c"><h2>Before and after</h2><div class="cmp"><div><h3>Typical today</h3><ol><li>Unload bags to feeder</li><li>Sort by product type</li><li>Scan, then move to an empty cage</li><li>Walk to find the cage that matches the postcode</li><li>Scan and move again</li></ol></div><div><h3>Proposed</h3><ol><li>Pre-bag by product or area at the origin</li><li>Ramp and conveyor to speed up unloading</li><li>One scan, cage number shown straight away</li><li>Lane serials match postcode order</li><li>Fewer moves and fewer double operations</li></ol></div></div></div></section>
+
+<section class="pane" id="chk"><div class="c"><button class="b" onclick="window.print()">Print checklists</button> <button class="b g" id="rst">Reset ticks</button></div><div id="lists"></div></section>
+
+<section class="pane" id="roi"><div class="c"><h2>Savings estimator (edit the numbers)</h2>
+<div class="row"><label>Items per shift<input id="r1" type="number" value="20000"></label><label>Search seconds today<input id="r2" type="number" value="6"></label><label>Lookup seconds<input id="r3" type="number" value="2"></label><label>Cost per hour (£)<input id="r4" type="number" value="13"></label><label>Shifts per year<input id="r5" type="number" value="300"></label></div>
+<div class="kpi"><div><b id="k1">–</b>hours saved per shift</div><div><b id="k2">–</b>£ saved per shift</div><div><b id="k3">–</b>£ saved per year</div></div>
+<p class="sm">Illustrative only. The default numbers are assumptions, not measured results. Replace them with your own site data.</p></div></section>
+
+<section class="pane" id="me"><div class="c me"><h2>About the builder: VB (Venkateswararao Banday)</h2>
+<p>Multi-sector programme and operations leader with the right to work in the UK and India, looking for roles in London.</p>
+<ul><li>30 years in logistics, supply chain management, warehouse operations and end-to-end management</li><li>I stabilise processes to lift output and reduce manpower</li><li>I build apps with AI and share them free to spread knowledge and useful information</li></ul>
+<p>If this helped you, and you know of an opportunity or can refer me, I would be very grateful.</p>
+<a class="btn" href="https://wa.me/919962507575" target="_blank" rel="noopener">WhatsApp +91 9962507575</a><a class="btn" href="https://wa.me/447391522993" target="_blank" rel="noopener">WhatsApp +44 7391 522993</a><a class="btn" href="https://www.linkedin.com/in/venkateswararao-banday" target="_blank" rel="noopener">LinkedIn</a>
+<p class="sm" style="color:#e8f0f8">Plain text: WhatsApp +91 9962507575 · WhatsApp +44 7391 522993 · LinkedIn: linkedin.com/in/venkateswararao-banday</p>
+<p class="sm" style="color:#e8f0f8">Free to share. No sign-up, no ads, no data collected. Everything is calculated in your browser and disappears when you close the page.</p></div></section>
+</div>
+<script>
+const $=id=>document.getElementById(id);
+let D=[["E1", "Whitechapel", "C01", "Lane A", "Door 1", "All"], ["E2", "Bethnal Green", "C01", "Lane A", "Door 1", "All"], ["E3", "Bow", "C02", "Lane A", "Door 1", "All"], ["E4", "Chingford", "C02", "Lane A", "Door 1", "All"], ["E11", "Leytonstone", "C03", "Lane A", "Door 1", "All"], ["E12", "Manor Park", "C03", "Lane A", "Door 1", "All"], ["E14", "Docklands", "C04", "Lane A", "Door 1", "All"], ["E15", "Stratford", "C04", "Lane A", "Door 1", "All"], ["EC1", "City of London", "C05", "Lane A", "Door 1", "All"], ["EC2", "City of London", "C05", "Lane A", "Door 1", "All"], ["N1", "Islington", "C06", "Lane B", "Door 2", "All"], ["N5", "Highbury", "C06", "Lane B", "Door 2", "All"], ["N7", "Holloway", "C07", "Lane B", "Door 2", "All"], ["SE1", "Southwark", "C07", "Lane B", "Door 2", "All"], ["SE10", "Greenwich", "C08", "Lane B", "Door 2", "All"], ["SW1", "Westminster", "C08", "Lane B", "Door 2", "All"], ["SW9", "Brixton", "C09", "Lane B", "Door 2", "All"], ["W1", "West End", "C09", "Lane B", "Door 2", "All"], ["W2", "Paddington", "C10", "Lane B", "Door 2", "All"], ["W12", "Shepherd's Bush", "C10", "Lane B", "Door 2", "All"], ["NW1", "Camden", "C11", "Lane C", "Door 3", "All"], ["NW3", "Hampstead", "C11", "Lane C", "Door 3", "All"], ["IG1", "Ilford", "C12", "Lane C", "Door 3", "All"], ["IG2", "Gants Hill", "C12", "Lane C", "Door 3", "All"], ["IG8", "Woodford", "C13", "Lane C", "Door 3", "All"], ["RM1", "Romford", "C13", "Lane C", "Door 3", "All"], ["RM7", "Romford", "C14", "Lane C", "Door 3", "All"], ["CM1", "Chelmsford", "C14", "Lane C", "Door 3", "All"], ["CM2", "Chelmsford", "C15", "Lane C", "Door 3", "All"], ["B1", "Birmingham", "C15", "Lane C", "Door 3", "All"], ["B2", "Birmingham", "C16", "Lane D", "Door 4", "All"], ["B3", "Birmingham", "C16", "Lane D", "Door 4", "All"], ["M1", "Manchester", "C17", "Lane D", "Door 4", "All"], ["M2", "Manchester", "C17", "Lane D", "Door 4", "All"], ["M3", "Salford", "C18", "Lane D", "Door 4", "All"], ["L1", "Liverpool", "C18", "Lane D", "Door 4", "All"], ["L2", "Liverpool", "C19", "Lane D", "Door 4", "All"], ["LS1", "Leeds", "C19", "Lane D", "Door 4", "All"], ["LS2", "Leeds", "C20", "Lane D", "Door 4", "All"], ["S1", "Sheffield", "C20", "Lane D", "Door 4", "All"], ["S2", "Sheffield", "C21", "Lane E", "Door 5", "All"], ["NG1", "Nottingham", "C21", "Lane E", "Door 5", "All"], ["NG2", "Nottingham", "C22", "Lane E", "Door 5", "All"], ["BS1", "Bristol", "C22", "Lane E", "Door 5", "All"], ["BS2", "Bristol", "C23", "Lane E", "Door 5", "All"], ["CF10", "Cardiff", "C23", "Lane E", "Door 5", "All"], ["EH1", "Edinburgh", "C24", "Lane E", "Door 5", "All"], ["EH2", "Edinburgh", "C24", "Lane E", "Door 5", "All"], ["G1", "Glasgow", "C25", "Lane E", "Door 5", "All"], ["NE1", "Newcastle", "C25", "Lane E", "Door 5", "All"]];
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{document.querySelectorAll("nav button,.pane").forEach(e=>e.classList.remove("on"));b.classList.add("on");$(b.dataset.t).classList.add("on")});
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function norm(s){return s.toUpperCase().replace(/\s+/g,"")}
+function findCode(v){v=v.trim().toUpperCase();if(!v)return null;const tok=v.split(/\s+/)[0];let r=D.find(x=>x[0].toUpperCase()===tok);if(r)return r;if(!/\s/.test(v)){const u=norm(v);let best=null;D.forEach(x=>{const k=norm(x[0]);if(u.startsWith(k)&&(!best||k.length>norm(best[0]).length))best=x});return best}return null}
+function render(){
+ const cages=[...new Set(D.map(r=>r[2]))];$("grid").innerHTML=cages.map(c=>{const r=D.find(x=>x[2]==c);return '<div class="cg" id="g'+esc(c)+'">'+esc(c)+'<small>'+esc(r[3]||"")+'</small></div>'}).join("");
+ $("cnt").textContent=D.length;
+ $("tb").innerHTML="<tr><th>Code</th><th>Area</th><th>Cage</th><th>Lane</th><th>Dock</th><th>Service</th><th></th></tr>"+D.map((r,i)=>"<tr>"+r.map(x=>"<td>"+esc(x)+"</td>").join("")+'<td><button class="b g" data-e="'+i+'">Edit</button> <button class="b g" data-d="'+i+'">✕</button></td></tr>').join("");
+ look()}
+function look(){document.querySelectorAll(".cg.on").forEach(e=>e.classList.remove("on"));const v=$("pc").value.trim();
+ if(!v){$("cage").textContent="–";$("meta").innerHTML="<b>Waiting for a postcode</b>";return}
+ const r=findCode(v);
+ if(r){$("cage").textContent=r[2];$("meta").innerHTML=[["Area",r[1]],["Code",r[0]],["Lane",r[3]],["Dock / door",r[4]],["Service",r[5]]].filter(x=>x[1]).map(x=>"<div><b>"+x[0]+"</b> "+esc(x[1])+"</div>").join("");const g=document.getElementById("g"+r[2]);if(g)g.classList.add("on")}
+ else{$("cage").textContent="EXC";$("meta").innerHTML='<div class="err">Not in your list. Send to the exceptions cage for a manual check, or add the code in Manage codes.</div>'}}
+let hist=[];
+$("pc").oninput=look;
+$("pc").onkeydown=e=>{if(e.key==="Enter"&&$("pc").value.trim()){const v=$("pc").value.trim().toUpperCase(),r=findCode(v);hist.unshift(v+" → "+(r?r[2]:"EXC"));hist=hist.slice(0,10);$("hist").innerHTML=hist.map(h=>"<span>"+esc(h)+"</span>").join("");$("pc").value="";look()}};
+$("add").onclick=()=>{const r=["f1","f2","f3","f4","f5","f6"].map(i=>$(i).value.trim());if(!r[0]||!r[2]){$("msg").textContent="Code and cage are required.";return}
+ const i=D.findIndex(x=>x[0].toUpperCase()===r[0].toUpperCase());r[0]=r[0].toUpperCase();if(i>=0)D[i]=r;else D.push(r);["f1","f2","f3","f4","f5","f6"].forEach(i=>$(i).value="");$("msg").textContent=(i>=0?"Updated ":"Added ")+r[0];render()};
+$("tb").onclick=e=>{const d=e.target.dataset;if(d.d!==undefined){D.splice(+d.d,1);render()}if(d.e!==undefined){D[+d.e].forEach((v,k)=>$("f"+(k+1)).value=v);window.scrollTo(0,0)}};
+const toCSV=()=>"code,area,cage,lane,dock,service\n"+D.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(",")).join("\n");
+$("exp").onclick=()=>{$("csv").value=toCSV()};
+$("dl").onclick=()=>{$("csv").value=toCSV();try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([toCSV()],{type:"text/csv"}));a.download="postcode_cages.csv";a.click()}catch(e){}};
+$("imp").onclick=()=>{const n=[];$("csv").value.split(/\r?\n/).forEach((l,i)=>{if(!l.trim()||(i==0&&/^"?code/i.test(l)))return;const p=(l.match(/("([^"]|"")*"|[^,]*)(,|$)/g)||[]).map(x=>x.replace(/,$/,"").replace(/^"|"$/g,"").replace(/""/g,'"').trim());while(p.length<6)p.push("");if(p[0]&&p[2])n.push(p.slice(0,6))});if(n.length){D=n;render()}};
+$("clr").onclick=()=>{D=[];render()};
+const L=[["🚚 Loading and unloading dock",["Ramp or dock leveller meets the vehicle bed height, no step or gap","Ramp gradient is safe for cages, roll containers and trolleys","Ramp edges, side rails and anti-slip surface checked","Handbrake on, engine off, wheel chocks placed","Vehicle restraint and dock traffic light set","Trailer floor checked for holes, damp and debris","Seal number matched to paperwork before opening","Lighting adequate inside the vehicle and at the dock"]],
+["🧱 Conveyor and ramps",["Conveyor runs from the dock to the far end of the vehicle","Up and down height adjustment works for each stack level","Belt, rollers and speed checked, no jams","Emergency stops, guards and pull cords tested","Side guides and transfer points clear of trapping points","Flow direction and lane signage clear","Buffer space at the end of the line"]],
+["🗂️ Sortation and cages",["Cage and lane labels match the postcode list","Exceptions cage in place and labelled","Each item scanned once only","Empty cages staged close to the lane","Double-handling points identified and logged","Cage load limits, wheels and brakes checked"]],
+["🦺 Safety and people",["PPE worn: hi-vis, safety shoes, gloves","Manual handling and weight limits followed","Pedestrians and MHE routes segregated","Fire exits and walkways clear","Shift briefing done, targets and breaks shared","Incidents and near misses reported"]],
+["🥫 FMCG and quality",["FIFO or FEFO followed, batch and expiry checked","Temperature recorded for chilled and frozen loads","Pallet wrap, labels and damage checked at receipt","Quantity checked against delivery note or ASN","Damages and shortages recorded with photos before signing","Hygiene and pest-control checks done"]]];
+function lists(){$("lists").innerHTML=L.map((s,i)=>'<div class="c" data-s="'+i+'"><h2>'+s[0]+'</h2><div class="bar"><i></i></div><div class="sm pct"></div>'+s[1].map(t=>'<label class="ck"><input type="checkbox"><span>'+esc(t)+'</span></label>').join("")+"</div>").join("")}
+function prog(){document.querySelectorAll("#lists .c").forEach(c=>{const a=c.querySelectorAll("input"),n=[...a].filter(x=>x.checked).length;c.querySelector(".bar i").style.width=(100*n/a.length)+"%";c.querySelector(".pct").textContent=n+" of "+a.length+" complete"})}
+$("lists").onchange=prog;$("rst").onclick=()=>{document.querySelectorAll("#lists input").forEach(x=>x.checked=false);prog()};
+function roi(){const g=i=>+$(i).value||0,h=g("r1")*(g("r2")-g("r3"))/3600;$("k1").textContent=h.toFixed(1);$("k2").textContent="£"+Math.round(h*g("r4")).toLocaleString("en-GB");$("k3").textContent="£"+Math.round(h*g("r4")*g("r5")).toLocaleString("en-GB")}
+["r1","r2","r3","r4","r5"].forEach(i=>$(i).oninput=roi);
+lists();prog();roi();render();
+</script></body></html>
